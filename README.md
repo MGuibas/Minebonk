@@ -1,4 +1,4 @@
-﻿# Minebonk — Minecraft gameplay for Megabonk
+# Minebonk — Minecraft gameplay for Megabonk
 
 **Minebonk** is a mod that adds **Steve** as a playable character in Megabonk. The world and the enemies stay Megabonk; the gameplay becomes Minecraft's: first-person view, hotbar and inventory, the 1.21 combat rules, Minecraft mobs and bosses, chests with Minecraft loot, and weapons that are Minecraft items.
 

@@ -19,6 +19,7 @@ namespace MegabonkSteve
         public float targetHeight = 1f;
         public bool sprinting;
         private float bobPhase, bobAmount;
+        private readonly Camera cameraRef; private readonly float fov0;
         private readonly float U;       // world units per Minecraft block, corrected for this camera's FOV
         private static Texture2D shieldTex;
         private static Mesh shieldPlate, shieldHandle;
@@ -28,6 +29,7 @@ namespace MegabonkSteve
             baseMat = mat;
             var camera = cam.GetComponent<Camera>();
             float fov = camera != null ? camera.fieldOfView : 70f;
+            cameraRef = camera; fov0 = fov;
             U = 2.5f * Mathf.Tan(35f * Mathf.Deg2Rad) / Mathf.Tan(fov * 0.5f * Mathf.Deg2Rad);
 
             root = new GameObject("MC_ViewModel");
@@ -46,8 +48,8 @@ namespace MegabonkSteve
             var armGo = new GameObject("arm");
             armGo.transform.SetParent(mainRoot, false);
             armGo.layer = root.layer;
-            armGo.transform.localScale = Vector3.one * (U / 16f * 0.75f);
-            armGo.transform.localPosition = new Vector3(0.06f, -0.14f, -0.40f) * U;
+            armGo.transform.localScale = Vector3.one * (U / 16f * 0.66f);
+            armGo.transform.localPosition = new Vector3(0.08f, -0.20f, -0.50f) * U;   // right against the camera, lower, so less of it shows
             armGo.transform.localRotation = Quaternion.Euler(-97f, 0f, 0f);   // tilted a touch upward
             var meshGo = new GameObject("arm_mesh");
             meshGo.transform.SetParent(armGo.transform, false);
@@ -238,6 +240,14 @@ namespace MegabonkSteve
 
         public void Tick(bool moving, bool blocking, float eatFrac, float eatTicksLeft)
         {
+            // When the game widens or narrows the camera (zoom), the hand and what it holds keep their size on screen: scale them
+            // by the change in field of view, and keep their depth so they do not drift.
+            if (cameraRef != null)
+            {
+                float k = Mathf.Tan(cameraRef.fieldOfView * 0.5f * Mathf.Deg2Rad) / Mathf.Tan(fov0 * 0.5f * Mathf.Deg2Rad);
+                root.transform.localScale = Vector3.one * k;
+                root.transform.localPosition = new Vector3(0f, 0f, 0.7f * U * (1f - k));
+            }
             if (root == null) return;
             bobAmount = Mathf.MoveTowards(bobAmount, moving ? (sprinting ? 1.8f : 1f) : 0f, Time.deltaTime * 5f);
             bobPhase += Time.deltaTime * (sprinting ? 12f : 9f) * bobAmount;

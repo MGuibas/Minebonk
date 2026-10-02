@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace MegabonkSteve
 {
-    [BepInPlugin("com.guibas.minebonk", "Minebonk", "0.1.3")]
+    [BepInPlugin("com.guibas.minebonk", "Minebonk", "0.1.4")]
     public class Plugin : BasePlugin
     {
         public static ManualLogSource Logger;

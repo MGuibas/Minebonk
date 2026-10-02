@@ -4,6 +4,10 @@
 
 > **Not affiliated with Mojang, Microsoft or the makers of Megabonk.** This is an unofficial fan mod. It contains no Minecraft files: textures and sounds are read from your own Minecraft install, or downloaded once from Mojang's servers if you accept the prompt (see below).
 
+## A native mod, not two games running together
+
+Some recent projects (for example [universal-modder](https://github.com/rehan-remade/universal-modder)'s Minecraft-in-GTA V demo) mix two games by running **both at the same time** and streaming camera, ground and events between them over a local connection. Minebonk does not do that. There is **only one process: Megabonk**. The Minecraft look and rules are rebuilt inside Megabonk itself (BepInEx + Harmony plugin): the Steve model, blocks, items, mobs, combat, HUD and sounds are all drawn and simulated by the mod in Megabonk's own engine. No Minecraft instance is launched, nothing runs in the background, and there is no extra latency or double memory use.
+
 ## Install
 
 1. Install **BepInEx 6 IL2CPP, build be.755** (the `BepInExPack_IL2CPP` pack on Thunderstore, or the build from builds.bepinex.dev) into your Megabonk folder and run the game once, so BepInEx creates its folders. (Tested with the Steam version of Megabonk.)

@@ -213,7 +213,11 @@ namespace MegabonkSteve
         }
 
         // Weapon icons in the corner say "AUTO" next to their level once they fire on their own.
-        private float nextAutoMark;
+        // Finding every text in the scene is slow (it showed up as a hitch once a second), so the "LVL" texts are collected
+        // only when something was picked, and the cheap per-second pass just walks that short list.
+        private float nextAutoMark, nextAutoFind;
+        public static bool AutoMarkDirty = true;
+        private readonly List<TMPro.TextMeshProUGUI> lvlTexts = new List<TMPro.TextMeshProUGUI>();
 
         private void MarkAutoWeaponsUi()
         {
@@ -221,7 +225,14 @@ namespace MegabonkSteve
             nextAutoMark = Time.time + 1f;
             try
             {
-                foreach (var tm in UnityEngine.Object.FindObjectsOfType<TMPro.TextMeshProUGUI>())
+                if (AutoMarkDirty || Time.time > nextAutoFind)
+                {
+                    AutoMarkDirty = false; nextAutoFind = Time.time + 30f;
+                    lvlTexts.Clear();
+                    foreach (var tm in UnityEngine.Object.FindObjectsOfType<TMPro.TextMeshProUGUI>())
+                        if (tm != null && tm.text != null && tm.text.StartsWith("LVL")) lvlTexts.Add(tm);
+                }
+                foreach (var tm in lvlTexts)
                 {
                     if (tm == null || tm.text == null || !tm.text.StartsWith("LVL") || tm.text.Contains("AUTO") || tm.transform.parent == null) continue;
                     var ri = tm.transform.parent.GetComponentInChildren<UnityEngine.UI.RawImage>();
@@ -457,10 +468,11 @@ namespace MegabonkSteve
 
         // Totem of Undying in either hand: cancels a lethal hit, leaves half a heart, then regeneration II (45 s)
         // and absorption II (5 s), exactly like vanilla. The totem is used up.
-        private float regenUntil, regenTimer, satHealUntil;
+        private float regenUntil, regenTimer, satHealUntil, totemGraceUntil;
 
         public bool TryTotem(PlayerHealth h, DamageContainer dc, bool ignoreShield)
         {
+            if (Time.time < totemGraceUntil) return true;   // a moment of invulnerability after a pop, so a second hit in the same instant cannot finish you
             if (h == null || dc == null) return false;
             int slot = -1;
             if (Held != null && Held.kind == ItemKind.Totem) slot = selected;
@@ -475,6 +487,7 @@ namespace MegabonkSteve
             regenUntil = Time.time + 45f; regenTimer = 0f;
             if (hud != null) hud.PopTotem(ItemLibrary.Totem.icon);
             McSound.Play("item.totem.use");
+            totemGraceUntil = Time.time + 0.5f;
             Plugin.Logger.LogInfo("Totem of Undying used");
             return true;
         }

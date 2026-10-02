@@ -65,7 +65,7 @@ namespace MegabonkSteve
         public static void Tick()
         {
             if (Time.time < nextScan) return;
-            nextScan = Time.time + 6f;
+            nextScan = Time.time + 12f;
             try { ScanRenderers(); } catch (Exception e) { if (Time.time < 120f) Plugin.Logger.LogWarning("terrain scan: " + e.Message); }
         }
 

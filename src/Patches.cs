@@ -603,7 +603,7 @@ namespace MegabonkSteve
     internal static class Patch_SelectUpgradeGuard
     {
         private static void Prefix() { Patch_AddWeaponGuard.Allow = Patch_ShuffleUpgrades.Current == Assets.Scripts.UI.InGame.Rewards.EEncounter.Levelup; }
-        private static void Postfix() { Patch_AddWeaponGuard.Allow = false; }
+        private static void Postfix() { Patch_AddWeaponGuard.Allow = false; MinecraftMode.AutoMarkDirty = true; }
     }
 }
 
@@ -616,7 +616,7 @@ namespace MegabonkSteve
         private static void Prefix(ref int amount)
         {
             if (!MinecraftMode.Active || Time.time > MinecraftMode.CritGoldUntil || amount <= 0) return;
-            Plugin.Logger.LogInfo("Critical hit: gold " + amount + " doubled");
+            Plugin.Dbg("Critical hit: gold " + amount + " doubled");
             amount *= 2;
         }
     }

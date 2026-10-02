@@ -364,6 +364,32 @@ namespace MegabonkSteve
         private ItemDef Held { get { return inv.defs[selected]; } }
         private ItemDef Offhand { get { return inv.defs[Inv.Offhand]; } }
 
+        // Going to the next stage builds a new player, so what Steve carries is kept here and handed to the next one.
+        private class StageSnapshot { public ItemDef[] defs; public int[] cnts; public int selected, xpLevel, kills; public float xpProgress, food, saturation; public int[] ench; }
+        private static StageSnapshot carry;
+
+        public void SaveForNextStage()
+        {
+            carry = new StageSnapshot
+            {
+                defs = (ItemDef[])inv.defs.Clone(), cnts = (int[])inv.cnts.Clone(), selected = selected,
+                xpLevel = xpLevel, xpProgress = xpProgress, kills = kills, food = food, saturation = saturation, ench = (int[])Ench.Lvl.Clone()
+            };
+            Plugin.Logger.LogInfo("Inventory kept for the next stage");
+        }
+
+        private void RestoreFromPreviousStage()
+        {
+            var s = carry; carry = null;
+            if (s == null) return;
+            Array.Copy(s.defs, inv.defs, inv.defs.Length);
+            Array.Copy(s.cnts, inv.cnts, inv.cnts.Length);
+            Array.Copy(s.ench, Ench.Lvl, Ench.Lvl.Length);
+            selected = s.selected; xpLevel = s.xpLevel; xpProgress = s.xpProgress; kills = s.kills; food = s.food; saturation = s.saturation;
+            RecomputeArmor();
+            Plugin.Logger.LogInfo("Inventory restored from the previous stage");
+        }
+
         private void Awake()
         {
             Instance = this;
@@ -374,6 +400,7 @@ namespace MegabonkSteve
             invUi = new McInventory(inv, OnInventoryChanged);
             LevelFilter.Apply();
             Ench.Reset();
+            RestoreFromPreviousStage();
             RecomputeArmor();
             itemNameUntil = Time.time + 3f;
             McSound.Init();

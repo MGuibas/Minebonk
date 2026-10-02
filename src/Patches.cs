@@ -654,3 +654,19 @@ namespace MegabonkSteve
         private static void Prefix(Assets.Scripts.Actors.Enemies.Enemy __instance) { try { var r = __instance.GetComponentInChildren<MobRig>(); if (r != null) r.lastPlayerDmg = Time.time; } catch { } }
     }
 }
+
+namespace MegabonkSteve
+{
+    // Taking the portal builds a new player: keep what Steve carries (hotbar, backpack, armor, enchantments, level).
+    [HarmonyPatch(typeof(Assets.Scripts.Managers.MapController), nameof(Assets.Scripts.Managers.MapController.LoadNextStage))]
+    internal static class Patch_KeepOnNextStage
+    {
+        private static void Prefix() { try { if (MinecraftMode.Instance != null) MinecraftMode.Instance.SaveForNextStage(); } catch { } }
+    }
+
+    [HarmonyPatch(typeof(Assets.Scripts.Managers.MapController), nameof(Assets.Scripts.Managers.MapController.LoadFinalStage))]
+    internal static class Patch_KeepOnFinalStage
+    {
+        private static void Prefix() { try { if (MinecraftMode.Instance != null) MinecraftMode.Instance.SaveForNextStage(); } catch { } }
+    }
+}

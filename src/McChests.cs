@@ -15,7 +15,7 @@ namespace MegabonkSteve
 
         private static List<Loot> table;
         // wooden, stone, iron, golden, diamond, netherite: the good ones are rare enough to feel like finds
-        private static readonly float[] ToolWeights = { 2.0f, 1.6f, 1.0f, 0.7f, 0.3f, 0.08f };
+        private static readonly float[] ToolWeights = { 2.0f, 1.6f, 1.2f, 0.95f, 0.5f, 0.14f };
 
         private static void BuildTable()
         {
@@ -31,19 +31,19 @@ namespace MegabonkSteve
                 new Loot { item = ItemLibrary.StrengthPotion, min = 1, max = 1, weight = 4f },
                 new Loot { item = ItemLibrary.HealPotion, min = 1, max = 1, weight = 5f },
                 new Loot { item = ItemLibrary.Totem, min = 1, max = 1, weight = 1.6f },
-                new Loot { item = ItemLibrary.Elytra, min = 1, max = 1, weight = 0.7f },
+                new Loot { item = ItemLibrary.Elytra, min = 1, max = 1, weight = 1.6f },
                 new Loot { item = ItemLibrary.Shield, min = 1, max = 1, weight = 1f },
                 new Loot { item = ItemLibrary.Bow, min = 1, max = 1, weight = 1.2f },
             };
             // Every armor and tool tier; the better the material, the rarer.
             foreach (var a in ItemLibrary.Armors)
-                table.Add(new Loot { item = a, min = 1, max = 1, weight = a.tier == "netherite" ? 0.12f : a.tier == "diamond" ? 0.35f : a.tier == "iron" ? 1.2f : 1.1f });
+                table.Add(new Loot { item = a, min = 1, max = 1, weight = a.tier == "netherite" ? 0.2f : a.tier == "diamond" ? 0.55f : a.tier == "iron" ? 1.5f : 1.1f });
             for (int i = 0; i < ItemLibrary.Swords.Count; i++)
                 table.Add(new Loot { item = ItemLibrary.Swords[i], min = 1, max = 1, weight = ToolWeights[i] });
             for (int i = 0; i < ItemLibrary.Axes.Count; i++)
                 table.Add(new Loot { item = ItemLibrary.Axes[i], min = 1, max = 1, weight = ToolWeights[i] * 0.7f });
-            table.Add(new Loot { item = ItemLibrary.Mace, min = 1, max = 1, weight = 0.4f });
-            table.Add(new Loot { item = ItemLibrary.EnchGoldenApple, min = 1, max = 1, weight = 0.5f });
+            table.Add(new Loot { item = ItemLibrary.Mace, min = 1, max = 1, weight = 0.6f });
+            table.Add(new Loot { item = ItemLibrary.EnchGoldenApple, min = 1, max = 1, weight = 0.75f });
             foreach (var f in ItemLibrary.Foods) table.Add(new Loot { item = f, min = 3, max = 8, weight = 5f });
         }
 
@@ -195,13 +195,13 @@ namespace MegabonkSteve
         private static void Fill(McChest mc, EChest type)
         {
             bool ender = type == EChest.Free || type == EChest.FreeCrypt;   // the free end chests are the best ones
-            int bonus = 2 + Ench.Lvl[Ench.Luck] + (ender ? 3 : 1);   // Treasure Hunter, Luck, and a better default loot
+            int bonus = 4 + Ench.Lvl[Ench.Luck] + (ender ? 3 : 1);   // Treasure Hunter, Luck, and a better default loot
             int rolls = bonus + (type == EChest.Corrupt ? UnityEngine.Random.Range(6, 11)
                       : (type == EChest.Free || type == EChest.FreeCrypt) ? UnityEngine.Random.Range(3, 6)
                       : UnityEngine.Random.Range(5, 9));
             for (int i = 0; i < rolls; i++)
             {
-                var l = Roll(ender ? 0.45f : 0.15f);
+                var l = Roll(ender ? 0.55f : 0.28f);
                 int n = UnityEngine.Random.Range(l.min, l.max + 1);
                 for (int tries = 0; tries < 40; tries++)
                 {

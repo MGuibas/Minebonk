@@ -232,13 +232,19 @@ namespace MegabonkSteve
 
         private static Vector3 Chest(MyPlayer p) { return p.transform.position + Vector3.up * (p.height * 0.6f); }
 
+        // Colliders do not change owner, so the (slow) parent lookup is remembered; many enemies make Near() the hot spot.
+        private static readonly Dictionary<int, Enemy> colOwner = new Dictionary<int, Enemy>();
+
         private static List<Enemy> Near(Vector3 pos, float radius)
         {
             var list = new List<Enemy>();
             var seen = new HashSet<int>();
+            if (colOwner.Count > 6000) colOwner.Clear();
             foreach (var col in Physics.OverlapSphere(pos, radius))
             {
-                var e = col.GetComponentInParent<Enemy>();
+                int cid = col.GetInstanceID();
+                Enemy e;
+                if (!colOwner.TryGetValue(cid, out e) || e == null) { e = col.GetComponentInParent<Enemy>(); colOwner[cid] = e; }
                 if (e == null || e.IsDead() || !seen.Add(e.GetInstanceID())) continue;
                 list.Add(e);
             }

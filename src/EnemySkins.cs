@@ -249,7 +249,7 @@ namespace MegabonkSteve
             var go = new GameObject("held");
             go.transform.SetParent(rig.armR, false);
             go.transform.localPosition = new Vector3(0f, -10f * rig.unit, 1.5f * rig.unit);
-            go.transform.localRotation = Quaternion.Euler(0f, -90f, -45f);   // blade forward, handle in the hand
+            go.transform.localRotation = Quaternion.Euler(0f, -90f, -45f) * (spec.held.Contains("bow") && !spec.held.Contains("crossbow") ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity);   // blade forward, handle in the hand; the bow is turned round so it bulges away from the skeleton
             go.transform.localScale = Vector3.one * rig.unit * 1.15f;
             // The hand closes on the handle, not the middle of the sprite: shift the mesh so the grip point sits at the hand.
             Vector3 grip = spec.held.Contains("sword") || spec.held.Contains("axe") ? new Vector3(-4.5f, -4.5f, 0f)
@@ -486,7 +486,16 @@ namespace MegabonkSteve
             var arr = GetComponentsInChildren<MeshRenderer>();
             rends = new Renderer[arr.Length];
             origMats = new Material[arr.Length];
-            for (int i = 0; i < arr.Length; i++) { rends[i] = arr[i]; origMats[i] = arr[i].sharedMaterial; }
+            int big = -1; float bigV = -1f;
+            for (int i = 0; i < arr.Length; i++)
+            {
+                rends[i] = arr[i]; origMats[i] = arr[i].sharedMaterial;
+                var s = arr[i].bounds.size; float v = s.x * s.y * s.z;
+                if (v > bigV) { bigV = v; big = i; }
+            }
+            // Every box of every mob drawn into every shadow cascade is what hurts with a crowd: only the biggest box casts a shadow.
+            for (int i = 0; i < arr.Length; i++)
+                if (i != big) arr[i].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
 
         private void SetWhite(bool on)
@@ -661,9 +670,37 @@ namespace MegabonkSteve
             transform.localScale = Vector3.one;
         }
 
+        private float pendingDt;
+        private static int posFrame = -1;
+        private static Vector3 playerPosCache;
+        private static float DistToPlayer(Vector3 p)
+        {
+            if (posFrame != Time.frameCount)
+            {
+                posFrame = Time.frameCount;
+                var pl = Assets.Scripts.Actors.Player.MyPlayer.Instance;
+                if (pl != null) playerPosCache = pl.transform.position;
+            }
+            return (p - playerPosCache).magnitude;
+        }
+
         private void LateUpdate()
         {
             if (enemy == null) return;
+            // With many enemies on screen the per-mob animation is the main cost: far mobs animate every 3rd/6th frame.
+            float dtAcc = Time.deltaTime;
+            if (!bossKind)
+            {
+                float dd = DistToPlayer(enemy.transform.position);
+                int every = dd > 140f ? 6 : (dd > 70f ? 3 : 1);
+                if (every > 1)
+                {
+                    pendingDt += dtAcc;
+                    if (age >= 1f && deathT < 0f && (Time.frameCount + GetInstanceID() % every + every) % every != 0) return;
+                    dtAcc = pendingDt;
+                }
+                pendingDt = 0f;
+            }
             // Keep the feet pinned to the ground for the first moments after spawning (the pool re-places the enemy).
             if (bossKind || kind == (int)MobKind.IronGolem)
             {
@@ -708,7 +745,7 @@ namespace MegabonkSteve
             }
             // The game may switch its own mesh back on (damage flash, status effects); keep it hidden.
             try { if (enemy.renderer != null && enemy.renderer.enabled) enemy.renderer.enabled = false; } catch { }
-            float dt = Time.deltaTime;
+            float dt = dtAcc;
             age += dt;
 
             Vector3 p = enemy.transform.position;

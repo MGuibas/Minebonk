@@ -175,6 +175,7 @@ namespace MegabonkSteve
             if (spec.boss) FitCollider(e, spec, rig.unit, feetLocal);
             AttachHeld(rig, spec);
             rig.CollectRenderers();
+            rig.CollectLimbs();
             if (spec.ranged) KeepDistance(e);
             if (r != null) r.enabled = false;
         }
@@ -481,6 +482,25 @@ namespace MegabonkSteve
         private int shootState;      // 0 idle, 1 drawing the bow
         private float shootCd = 1.5f, drawT;
 
+        private MeshRenderer[] lodRends;
+        private bool lodFar;
+
+        // Far mobs drop their limbs (the most numerous boxes): at that distance they read as a silhouette anyway.
+        public void CollectLimbs()
+        {
+            var list = new System.Collections.Generic.List<MeshRenderer>();
+            var roots = new System.Collections.Generic.List<Transform>();
+            if (legs != null) roots.AddRange(legs);
+            roots.Add(legR); roots.Add(legL); roots.Add(armR); roots.Add(armL);
+            foreach (var t in roots)
+            {
+                if (t == null) continue;
+                foreach (var r in t.GetComponentsInChildren<MeshRenderer>())
+                    if (r != null && r.gameObject.name != "held_m") list.Add(r);
+            }
+            lodRends = list.ToArray();
+        }
+
         public void CollectRenderers()
         {
             var arr = GetComponentsInChildren<MeshRenderer>();
@@ -705,7 +725,13 @@ namespace MegabonkSteve
             if (!bossKind)
             {
                 float dd = DistToPlayer(enemy.transform.position);
-                int every = dd > 140f ? 6 : (dd > 70f ? 3 : 1);
+                bool far = dd > 55f;
+                if (far != lodFar && lodRends != null)
+                {
+                    lodFar = far;
+                    foreach (var lr in lodRends) if (lr != null) lr.enabled = !far;
+                }
+                int every = dd > 120f ? 8 : (dd > 70f ? 5 : (dd > 50f ? 3 : (dd > 30f ? 2 : 1)));
                 if (every > 1)
                 {
                     pendingDt += dtAcc;

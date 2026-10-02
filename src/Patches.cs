@@ -548,7 +548,7 @@ namespace MegabonkSteve
             {
                 var repl = DataManager.Instance.GetEnemyData(swap);
                 if (repl == null) return;
-                if (reported.Add(type)) Plugin.Logger.LogInfo("Mob " + type + " has no Minecraft version: spawns as " + swap);
+                if (reported.Add(type)) Plugin.Logger.LogInfo("Mob " + type + " has no Minecraft version: spawns as " + swap + " (damage " + repl.damage + ", speed " + repl.speed + ", hp " + repl.hp + ")");
                 data = repl;
             }
             catch { }

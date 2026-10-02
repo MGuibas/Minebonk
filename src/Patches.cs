@@ -621,3 +621,36 @@ namespace MegabonkSteve
         }
     }
 }
+
+namespace MegabonkSteve
+{
+    // A creeper that is killed must not explode: the game's own exploder death (inflate, then blow up) is skipped for Minecraft creepers.
+    // Their only explosion is the fuse, which cannot run once they are dead.
+    [HarmonyPatch(typeof(EffectManager), nameof(EffectManager.ExploderEnemy))]
+    internal static class Patch_NoDeathExplosion
+    {
+        private static bool Prefix(Assets.Scripts.Actors.Enemies.Enemy enemy)
+        {
+            try
+            {
+                var rig = enemy != null ? enemy.GetComponentInChildren<MobRig>() : null;
+                if (rig != null) { rig.BlowIfSelfDestructed(); return false; }
+            }
+            catch { }
+            return true;
+        }
+    }
+
+    // Remember when the player last hurt an enemy, to tell a kill by the player from the game's own self-destruct.
+    [HarmonyPatch(typeof(Assets.Scripts.Actors.Enemies.Enemy), nameof(Assets.Scripts.Actors.Enemies.Enemy.DamageFromPlayerWeapon))]
+    internal static class Patch_MarkWeaponDamage
+    {
+        private static void Prefix(Assets.Scripts.Actors.Enemies.Enemy __instance) { try { var r = __instance.GetComponentInChildren<MobRig>(); if (r != null) r.lastPlayerDmg = Time.time; } catch { } }
+    }
+
+    [HarmonyPatch(typeof(Assets.Scripts.Actors.Enemies.Enemy), nameof(Assets.Scripts.Actors.Enemies.Enemy.DamageFromPlayerOther))]
+    internal static class Patch_MarkOtherDamage
+    {
+        private static void Prefix(Assets.Scripts.Actors.Enemies.Enemy __instance) { try { var r = __instance.GetComponentInChildren<MobRig>(); if (r != null) r.lastPlayerDmg = Time.time; } catch { } }
+    }
+}

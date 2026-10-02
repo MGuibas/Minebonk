@@ -635,8 +635,21 @@ namespace MegabonkSteve
             catch (Exception ex) { Plugin.Logger.LogWarning("sonic boom: " + ex.Message); }
         }
 
-        private void Blow(Assets.Scripts.Actors.Player.MyPlayer pl)
+        public float lastPlayerDmg = -10f;
+        private bool blown;
+        // The game kills a creeper by itself when you brush past it (its own contact explosion): that one must still go off.
+        public void BlowIfSelfDestructed()
         {
+            if (!explodes || blown || Time.time - lastPlayerDmg < 0.4f) return;
+            var pl = Assets.Scripts.Actors.Player.MyPlayer.Instance;
+            if (pl != null) Blow(pl, true);
+        }
+
+        private void Blow(Assets.Scripts.Actors.Player.MyPlayer pl, bool force = false)
+        {
+            if (blown) return;
+            try { if (!force && enemy.IsDead()) return; } catch { }
+            blown = true;
             Vector3 pos = enemy.GetCenterPosition();
             float dmg = Mathf.Max(25f, enemy.enemyData.damage * 4f);
             float radius = 17.5f;
@@ -663,7 +676,7 @@ namespace MegabonkSteve
 
         public void ResetState()
         {
-            deathT = -1f; limbAmount = 0f; inited = false;
+            deathT = -1f; limbAmount = 0f; inited = false; blown = false; lastPlayerDmg = -10f;
             fuse = 0f; swelling = false; shootState = 0; shootCd = UnityEngine.Random.Range(1f, 2.5f);
             SetWhite(false);
             transform.localRotation = Quaternion.identity;

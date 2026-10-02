@@ -1715,7 +1715,7 @@ namespace MegabonkSteve
             float y = pl.transform.position.y;
             if (pl.playerMovement.grounded || gliding) peakY = y;
             else if (y > peakY) peakY = y;
-            if ((pl.playerMovement.grounded || gliding) && prevFall >= 2.0f && !gliding) { AutoWeapons.LandHeight = prevFall; AutoWeapons.Event(AutoWeapons.Ev.Land); AutoWeapons.LandHeight = 0f; }
+            if ((pl.playerMovement.grounded || gliding) && prevFall >= 2.0f && !gliding) { if (Weapon.kind == ItemKind.Mace) { AutoWeapons.LandHeight = prevFall; AutoWeapons.Event(AutoWeapons.Ev.Land); AutoWeapons.LandHeight = 0f; } }
             fallBlocks = Mathf.Max(0f, (peakY - y) / BlocksToUnits);
             prevFall = pl.playerMovement.grounded ? 0f : fallBlocks;
         }

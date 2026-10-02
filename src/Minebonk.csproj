@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>Minebonk</AssemblyName>
+    <RootNamespace>MegabonkSteve</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <!-- Your Megabonk folder, with BepInEx 6 IL2CPP (be.755) installed and the game run once.
+         Override on the command line:  dotnet build -c Release -p:GamePath="D:\Games\Megabonk" -->
+    <GamePath Condition="'$(GamePath)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Megabonk</GamePath>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="NVorbis" Version="0.10.5" />
+    <Reference Include="$(GamePath)\BepInEx\core\*.dll" Private="false" />
+    <Reference Include="$(GamePath)\BepInEx\interop\*.dll" Private="false" />
+  </ItemGroup>
+</Project>
